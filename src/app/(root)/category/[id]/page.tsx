@@ -7,33 +7,36 @@ import { productService } from '@/services/product.service';
 
 export const revalidate = 60;
 
-async function getProducts(params: { id: string }) {
-  const products = await productService.getByCategory(params.id);
-
-  const category = await categoryService.getById(params.id);
-
+// Вспомогательная функция для получения данных
+async function getProducts(id: string) {
+  const products = await productService.getByCategory(id);
+  const category = await categoryService.getById(id);
   return { products, category };
 }
 
 export async function generateMetadata({
   params
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { category, products } = await getProducts(params);
+  const { id } = await params; // Разрешаем Promise
+  const { category, products } = await getProducts(id);
 
   return {
     title: category.title,
     description: category.description,
     openGraph: {
-      images: [
-        {
-          url: products[0].images[0],
-          width: 1000,
-          height: 1000,
-          alt: category.title
-        }
-      ]
+      images:
+        products.length > 0 && products[0].images.length > 0
+          ? [
+              {
+                url: products[0].images[0],
+                width: 1000,
+                height: 1000,
+                alt: category.title
+              }
+            ]
+          : []
     }
   };
 }
@@ -41,9 +44,10 @@ export async function generateMetadata({
 export default async function CategoryPage({
   params
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { category, products } = await getProducts(params);
+  const { id } = await params; // Разрешаем Promise
+  const { category, products } = await getProducts(id);
 
   return (
     <div className="my-6">
