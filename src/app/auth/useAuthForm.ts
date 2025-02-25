@@ -15,6 +15,7 @@ export function useAuthForm(isReg: boolean) {
   const form = useForm<IAuthForm>({
     mode: 'onChange',
     defaultValues: {
+      name: '',
       email: '',
       password: ''
     }
